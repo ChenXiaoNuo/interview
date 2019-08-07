@@ -18,4 +18,108 @@ volatile 是 Java 虚拟机提供的轻量级的同步机制，拥有以下三�
 所有线程都可以访问，但线程对变量的操作(读取赋值等)必须在工作内存中进行，首先要将变量从主内存拷贝到自己的工作内存空间，
 然后对变量进行操作，操作完成后再将变量写回主内存，不能直接操作主内存中的变量，各个线程中的工作内存中存储着主内存中的变量副本拷贝，
 因此不同的线程间无法访问对方的工作内存，线程间的通信(传值)必须通过主内存来完成，其简要访问过程如下图：  
-![JMM](JMM.png)
+![JMM](JMM.png#pic_center)
+- 可见性
+
+&#8194;&#8194;&#8194;&#8194;各个线程对主内存中共享变量的操作都是各个线程各自拷贝到自己的工作内存进行操作然后再写回到主内存中的。  
+&#8194;&#8194;&#8194;&#8194;这就可能存在一个线程 t1 修改了共享变量 X 的值但还未写回主内存时，另外一个线程 t2 又对主内存中同一个共享
+变量 X 进行操作，但此时 t1 线程工作内存中共享变量 X 对线程 t2 来说并不可见，这种工作内存与主内存同步延迟现象就造成了可见性问题。
+```java
+/**
+ * 验证volatile的可见性
+ *  1. 例如 int number = 0; number变量之前根本没有添加volatile关键字,没有可见性
+ *  2. 例如 int number = 0; number变量之前添加volatile关键字,有可见性
+ * @author chenxiaonuo
+ * @date 2019-08-06 17:15
+ */
+public class Demo01Volatile {
+
+    public static void main(String[] args) {
+        MyData myData = new MyData();
+        new Thread(() -> {
+            System.out.println(Thread.currentThread().getName() + "\tcome in");
+            try {
+                TimeUnit.SECONDS.sleep(3);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            myData.addT060();
+            System.out.println(Thread.currentThread().getName() + "\tupdate number value：" + myData.number);
+        }, "t1").start();
+
+        //第二个线程就是main线程
+        //1. number变量之前根本没有添加volatile关键字，t1线程已经完成了number的修改，但是main线程没有接收到number改变了，因此一直等待
+        //1. number变量之前添加volatile关键字，t1线程已经完成了number的修改，main线程接收到number改变了，满足条件继续执行
+        while (myData.number == 0){
+            //main线程一直在这里等待循环，直到number值不再等于0.
+        }
+
+        System.out.println(Thread.currentThread().getName() + "\tmission is over，main get number value：" + myData.number);
+    }
+
+}
+
+class MyData{
+        volatile int number = 0;
+    
+        public void addT060(){
+            this.number = 60;
+        }
+}
+
+```
+- 原子性
+```java
+/**
+ * 验证volatile不保证原子性
+ *  1.原子性指的是什么意思？
+ *      不可分割，完整性，也即某个线程正在做某个业务时，中间不可以被加塞或者被分割。
+ *      需要整体完整，要么同时成功，要么同时失败
+ *  2.volatile不保证原子性的案例演示
+ *  3.如何解决
+ *      * 加sync
+ *      * 利用Atomic
+ * @author chenxiaonuo
+ * @date 2019-08-06 17:15
+ */
+public class Demo02Volatile {
+
+    public static void main(String[] args) {
+        MyData myData = new MyData();
+        for (int i = 0; i < 20; i++) {
+            new Thread(() -> {
+                for (int j = 0; j < 1000; j++) {
+                    myData.addPlusPlus();
+                    myData.addAtomic();
+                }
+            }, String.valueOf(i)).start();
+        }
+
+        //需要等待上面的20个线程全部计算完成后，再用main线程取得最终的结果值
+        while (Thread.activeCount() > 2){//main和gc线程，所以此处为2
+            Thread.yield();
+        }
+
+        //出现了丢失写值的情况，写覆盖
+        System.out.println(Thread.currentThread().getName() + " int type, finally number value：" + myData.number);
+        //结果正确
+        System.out.println(Thread.currentThread().getName() + " AtomicInteger type, finally number value：" + myData.atomicInteger);
+
+    }
+}
+
+class MyData{
+    volatile int number = 0;
+
+    public void addPlusPlus(){
+        //number++在多线程下是非线程安全的
+        number++;
+    }
+
+    AtomicInteger atomicInteger = new AtomicInteger();
+    public void addAtomic(){
+        atomicInteger.getAndIncrement();
+    }
+}
+```
+&#8194;&#8194;&#8194;&#8194;
