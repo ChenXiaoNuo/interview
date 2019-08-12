@@ -107,5 +107,69 @@ class Phone implements Runnable{
 #### 自旋锁
 &#8194;&#8194;&#8194;&#8194;自旋锁(spinlock)：是指尝试获取锁的线程不会立即阻塞，而是**采用循环的方式去尝试获取锁**，这样的好处是减少上下文切换的消耗，缺点就是循环会小小CPU
 
-#### 独占锁/共享锁
+```java
+/**
+ * 实现一个自旋锁
+ *  通过CAS操作完成自旋锁，A线程先来调用myLock方法自己持有锁5秒钟，B随后进来发现当前有线程持有锁，不是null，
+ *  所以只能通过自旋等待，直到A释放锁后B随后抢到。
+ * @author chenxiaonuo
+ * @date 2019-08-12 18:26
+ */
+public class SpinLockDemo {
+
+    //原子引用线程
+    AtomicReference<Thread> atomicReference = new AtomicReference<>();
+
+    public void myLock(){
+        Thread thread = Thread.currentThread();
+        System.out.println(Thread.currentThread().getName() + " come in...");
+
+        while (!atomicReference.compareAndSet(null, thread)){
+
+        }
+    }
+
+    public void myUnlock(){
+        Thread thread = Thread.currentThread();
+        atomicReference.compareAndSet(thread, null);
+        System.out.println(Thread.currentThread().getName() + " invoked myUnlock()");
+    }
+
+    public static void main(String[] args) {
+        SpinLockDemo spinLockDemo = new SpinLockDemo();
+
+        new Thread(() -> {
+            spinLockDemo.myLock();
+            //暂停一会线程
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            spinLockDemo.myUnlock();
+        },"t1").start();
+
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        new Thread(() -> {
+            spinLockDemo.myLock();
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            spinLockDemo.myUnlock();
+        },"t2").start();
+    }
+
+}
+```
+
+#### 独占锁(写锁)/共享锁(读锁)/互斥锁
+独占锁：指该锁一次只能被一个线程所持有。对 ReentrantLock/Synchronized 而言都是独占锁  
+共享锁：指该锁可被多个线程所持有。对 ReentrantReadWriteLock 其读锁是共享锁，其写锁是独占锁。读锁的共享锁可保证并发读是非常高效的，读写、写读、写写的过程是互斥的。
 
