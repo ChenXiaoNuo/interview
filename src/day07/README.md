@@ -19,10 +19,96 @@
     - SynchronousQueue：不存储元素的阻塞队列，也即单个元素的队列。
     - LinkedTransferQueue：由链表结构组成的无界阻塞队列。
     - LinkedBlockingDeque：由链表结构组成的双向阻塞队列。
+    
  - BlockingQueue的核心方法  
-
 |方法类型|抛出异常|特殊值|阻塞|超时|  
 :-:|:-:|:-:|:-:|:-:  
 |插入|add(e)|offer(e)|put(e)|offer(e,time,unit)|  
 |移除|remove()|poll()|take()|poll(time,unit)|  
 |检查|element()|peek()|不可用|不可用|  
+    - 抛出异常
+        - 当阻塞队列满时，再往队列里add插入元素会抛出 java.lang.IllegalStateException: Queue full；  
+        - 当阻塞队列空时，再从队列里remove移除元素会抛出 java.util.NoSuchElementException
+    - 特殊值
+        - 插入方法，成功true失败false
+        - 移除方法，成功返回出队列的元素，队列里面没有就返回null
+    - 一直阻塞
+        - 当阻塞队列满时，生产者线程继续往队列里put元素，队列会一直阻塞生产线程知道put数据或者响应中断退出
+        - 当阻塞队列空时，消费者线程试图从队列里take元素，队列会一直阻塞消费者线程知道队列可用
+    - 超时退出
+        - 当阻塞队列满时，队列会阻塞生产者现场一定时间，超过限时后生产者线程会退出
+        
+```java
+
+/**
+ * ArrayBlockingQueue：是一个基于数组结构的有界阻塞队列，此队列按 FIFO(先进先出)原则对元素进行排序。
+ * LinkedBlockingQueue：一个基于链表结构的阻塞队列，此队列按 FIFO(先进先出)排序元素，吞吐量通常要高于ArrayBlockingQueue。
+ * SynchronousQueue：一个不存储元素的阻塞队列。每个插入操作必须等到另一个线程调用移除操作，否则插入操作一直处于阻塞状态
+ * @author chenxiaonuo
+ * @date 2019-08-14 16:22
+ */
+public class BlockingQueueDemo {
+
+    public static void main(String[] args) throws Exception {
+        BlockingQueue<String> blockingQueue = new ArrayBlockingQueue<>(2);
+
+        System.out.println(blockingQueue.add("a"));
+        System.out.println(blockingQueue.add("b"));
+        //System.out.println(blockingQueue.add("c"));
+        //System.out.println(blockingQueue.offer("c"));//false
+        //blockingQueue.put("c");//一直阻塞
+        blockingQueue.offer("c", 2L, TimeUnit.SECONDS);//阻塞2s
+
+        System.out.println(blockingQueue.element());//是否为空，并且输出队首元素
+
+        System.out.println(blockingQueue.remove());//先进先出
+        System.out.println(blockingQueue.remove());
+        //System.out.println(blockingQueue.remove());
+        //System.out.println(blockingQueue.poll());//null
+        //blockingQueue.take();//一直阻塞
+    }
+}
+
+```
+- SynchronousQueue 没有容量。与其他BlockingQueue不同，SynchronousQueue 是一个不存储元素的 BlockingQueue。每一个put操作必须等待一个take操作，否则不能继续添加元素，反之亦然。
+```java
+/**
+* 同步队列
+*/
+public class SynchronousQueueDemo {
+
+    public static void main(String[] args) {
+
+        BlockingQueue<String> blockingQueue = new SynchronousQueue<>();
+
+        new Thread(() -> {
+            try {
+                System.out.println(Thread.currentThread().getName() + " put 1");
+                blockingQueue.put("1");
+                System.out.println(Thread.currentThread().getName() + " put 2");
+                blockingQueue.put("2");
+                System.out.println(Thread.currentThread().getName() + " put 3");
+                blockingQueue.put("3");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }, "t1").start();
+
+        new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(5);
+                System.out.println(Thread.currentThread().getName() + " " + blockingQueue.take());
+                TimeUnit.SECONDS.sleep(5);
+                System.out.println(Thread.currentThread().getName() + " " + blockingQueue.take());
+                TimeUnit.SECONDS.sleep(5);
+                System.out.println(Thread.currentThread().getName() + " " + blockingQueue.take());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }, "t2").start();
+
+    }
+}
+
+```
+#### 应用场景
