@@ -20,8 +20,8 @@
     - LinkedTransferQueue：由链表结构组成的无界阻塞队列。
     - LinkedBlockingDeque：由链表结构组成的双向阻塞队列。
  - BlockingQueue的核心方法  
-|id|name|
-|:-|:-|
-|1|A1|
-|2|A2|
-|3|A3|
+
+|1|2|  
+-:|:-:|  
+|2|3|  
+|4|5|  
