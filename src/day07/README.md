@@ -21,7 +21,8 @@
     - LinkedBlockingDeque：由链表结构组成的双向阻塞队列。
  - BlockingQueue的核心方法  
 
-|1|2|  
--:|:-:|  
-|2|3|  
-|4|5|  
+|方法类型|抛出异常|特殊值|阻塞|超时|  
+:-:|:-:|:-:|:-:|:-:  
+|插入|add(e)|offer(e)|put(e)|offer(e,time,unit)|  
+|移除|remove()|poll()|take()|poll(time,unit)|  
+|检查|element()|peek()|不可用|不可用|  
