@@ -85,18 +85,21 @@ public class Executors{
 ```
 #### 线程池的几个重要参数介绍
 ```java
- public ThreadPoolExecutor(int corePoolSize,//线程池中的常驻核心线程数
-                              int maximumPoolSize,//线程池能够容纳同时执行的最大线程数，此值必须大于等于1
-                              long keepAliveTime,//多余的空闲线程的存活时间。
-                                                 // 当前线程池的数量超过corePoolSize时，当空闲时间达到keepAliveTime时，多余空闲线程会被销毁只到只剩下corePoolSize个线程为止。
-                              TimeUnit unit,//keepAliveTime的单位
-                              BlockingQueue<Runnable> workQueue,//任务队列，被提交但尚未被执行的任务
-                              ThreadFactory threadFactory,//表示生产线程池中工作线程的线程共存，用于创建线程一般用默认的即可
-                              RejectedExecutionHandler handler//拒绝策略，表示当队列满了并且工作线程大于等于线程池的最大线程数maximumPoolSize时如何来拒绝
-                              )
+ public ThreadPoolExecutor(int corePoolSize,
+                              int maximumPoolSize,
+                              long keepAliveTime,
+                              TimeUnit unit,
+                              BlockingQueue<Runnable> workQueue,
+                              ThreadFactory threadFactory,
+                              RejectedExecutionHandler handler)
 ```
 |参数|描述|解释|
 :-:|:-|:-
-|corePoolSize|线程池中的常驻核心线程数|1.在创建了线程池后，当有任务来之后，就会安排池中的线程去执行请求任务；   
-2.当线程池中的线程数量达到corePoolSize后，就会把到达的任务放到缓存队列当中|
+|corePoolSize|线程池中的常驻核心线程数|1.在创建了线程池后，当有任务来之后，就会安排池中的线程去执行请求任务；2.当线程池中的线程数量达到corePoolSize后，就会把到达的任务放到缓存队列当中|
+|maximumPoolSize|线程池能够容纳同时执行的最大线程数，此值必须大于等于1||
+|keepAliveTime|多余的空闲线程的存活时间。当前线程池的数量超过corePoolSize时，当空闲时间达到keepAliveTime时，多余空闲线程会被销毁只到只剩下corePoolSize个线程为止。||
+|unit|keepAliveTime的单位||
+|workQueue|任务队列，被提交但尚未被执行的任务||
+|threadFactory|表示生产线程池中工作线程的线程共存，用于创建线程一般用默认的即可||
+|handler|拒绝策略，表示当队列满了并且工作线程大于等于线程池的最大线程数maximumPoolSize时如何来拒绝||
 #### 底层工作原理
