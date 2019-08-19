@@ -93,7 +93,7 @@ public class Executors{
                               ThreadFactory threadFactory,
                               RejectedExecutionHandler handler)
 ```
-|参数|描述|解释|
+|参数|描述|备注|
 :-:|:-|:-
 |corePoolSize|线程池中的常驻核心线程数|1.在创建了线程池后，当有任务来之后，就会安排池中的线程去执行请求任务；2.当线程池中的线程数量达到corePoolSize后，就会把到达的任务放到缓存队列当中|
 |maximumPoolSize|线程池能够容纳同时执行的最大线程数，此值必须大于等于1||
@@ -101,5 +101,5 @@ public class Executors{
 |unit|keepAliveTime的单位||
 |workQueue|任务队列，被提交但尚未被执行的任务||
 |threadFactory|表示生成线程池中工作线程的线程工厂，用于创建线程一般用默认的即可||
-|handler|拒绝策略，表示当队列满了并且工作线程大于等于线程池的最大线程数maximumPoolSize时如何来拒绝||
+|handler|拒绝策略，表示当队列满了并且工作线程大于等于线程池的最大线程数maximumPoolSize时如何来拒绝请求执行的 runnable 的策略||
 #### 底层工作原理
