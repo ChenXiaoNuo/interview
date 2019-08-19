@@ -1,8 +1,6 @@
 package day08;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * Executors.newScheduledThreadPool()
@@ -14,6 +12,29 @@ import java.util.concurrent.TimeUnit;
 public class ThreadPoolDemo {
 
     public static void main(String[] args) {
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+                2,
+                5,
+                1L,TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(3),
+                Executors.defaultThreadFactory(),
+                new ThreadPoolExecutor.DiscardOldestPolicy());
+
+        try {
+            for (int i = 0; i < 10; i++) {
+                threadPoolExecutor.execute(()->{
+                    System.out.println(Thread.currentThread().getName() + "  办理业务！");
+                });
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        } finally {
+            threadPoolExecutor.shutdown();
+        }
+
+    }
+
+    public static void threadPoolInit(){
         //ExecutorService executorService = Executors.newFixedThreadPool(5);//固定5个线程的池子
         //ExecutorService executorService = Executors.newSingleThreadExecutor();//一个线程的池子
         ExecutorService executorService = Executors.newCachedThreadPool();//N个线程的池子
@@ -30,7 +51,6 @@ public class ThreadPoolDemo {
         } finally {
             executorService.shutdown();
         }
-
 
     }
 
